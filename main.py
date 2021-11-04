@@ -21,7 +21,7 @@ def notify():
     cur = con.cursor()
     device_token = request.args.get("device_token")
 
-    cur.execute("insert into device_token (value) values (?)", (device_token,))
+    cur.execute("insert into device_token (value) values (?) on conflict do nothing", (device_token,))
 
     tokens = [row[0] for row in cur.execute(f"select * from device_token")]
     print(tokens)
