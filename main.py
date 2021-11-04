@@ -2,6 +2,7 @@ from flask import Flask, request
 import requests
 import json
 import sqlite3
+import time
 
 app = Flask(__name__)
 server_key = "AAAAUKuWS4o:APA91bEqw_9luyNSvNpEpDQOqhYFt1NV6-R4MweUKuyxDCHnFqjn4u1t8Fxx5-rDpHhBakhn7adRoJ3mArnkw7zexbEVzHVOy3wDtybd56TkFOif9EdyuB4qNhxe1hTM_o2iDNRr05VF"
@@ -19,10 +20,9 @@ def notify():
     cur = con.cursor()
     device_token = request.args.get("device_token")
 
-    cur.execute("insert into device_token (value) values (?)", device_token)
+    cur.execute("insert into device_token (value) values (?)", (device_token,))
 
     tokens = [row[0] for row in cur.execute(f"select * from device_token")]
-    print(tokens)
     con.commit()
     con.close()
 
