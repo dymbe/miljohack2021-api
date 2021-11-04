@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, make_response
 import requests
 import json
 import sqlite3
@@ -42,9 +42,11 @@ def notify():
         #   'data': dataPayLoad,
     }
 
+    print(body)
+
     response = requests.post("https://fcm.googleapis.com/fcm/send", headers=headers, data=json.dumps(body))
 
-    print(response.status_code)
-    print(response.json())
-
-    return response.json()
+    if response.status_code == 200:
+        return response.json()
+    else:
+        return str(response.status_code), response.status_code
