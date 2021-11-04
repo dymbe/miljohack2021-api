@@ -28,26 +28,21 @@ def notify():
     con.commit()
     con.close()
 
-    headers = {
-        'Content-Type': 'application/json',
-        'Authorization': 'key=' + server_key,
-    }
+    for token in tokens:
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': 'key=' + server_key,
+        }
 
-    body = {
-        'notification': {
-            'title': 'Sending push form python script',
-            'body': 'New Message'
-        },
-        'to': tokens,
-        'priority': 'high',
-        #   'data': dataPayLoad,
-    }
+        body = {
+            'notification': {
+                'title': 'Sending push form python script',
+                'body': 'New Message'
+            },
+            'to': token,
+            'priority': 'high',
+        }
 
-    print(body)
+        response = requests.post("https://fcm.googleapis.com/fcm/send", headers=headers, data=json.dumps(body))
 
-    response = requests.post("https://fcm.googleapis.com/fcm/send", headers=headers, data=json.dumps(body))
-
-    if response.status_code == 200:
-        return response.json()
-    else:
-        return str(response.status_code), response.status_code
+    return "Tried to send notification"
