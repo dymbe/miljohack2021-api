@@ -40,7 +40,7 @@ def packages():
 
 
 @app.route("/register-device")
-def notify():
+def register_device():
     device_token = request.args.get("device_token")
     query("insert into device_token (value) values (?) on conflict do nothing", (device_token,))
     return device_token
