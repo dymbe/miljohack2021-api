@@ -16,6 +16,7 @@ def hello_world():
 
 @app.route("/notification")
 def notify():
+    time.sleep(3)
     con = sqlite3.connect('database.db')
     cur = con.cursor()
     device_token = request.args.get("device_token")
