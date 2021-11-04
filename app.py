@@ -3,6 +3,7 @@ import requests
 import json
 from dbutils import query
 from datetime import datetime
+from os import environ
 
 app = Flask(__name__)
 server_key = "AAAAUKuWS4o:APA91bEqw_9luyNSvNpEpDQOqhYFt1NV6-R4MweUKuyxDCHnFqjn4u1t8Fxx5-rDpHhBakhn7adRoJ3mArnkw7zexbEVzHVOy3wDtybd56TkFOif9EdyuB4qNhxe1hTM_o2iDNRr05VF"
@@ -69,3 +70,10 @@ def notify():
         requests.post("https://fcm.googleapis.com/fcm/send", headers=headers, data=json.dumps(body))
 
     return "Tried to send notification"
+
+
+if __name__ == '__main__':
+    app.debug = True
+    host = environ["FLASK_HOST"]
+    port = int(environ["FLASK_PORT"])
+    app.run(host=host, port=port)
