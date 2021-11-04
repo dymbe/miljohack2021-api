@@ -38,7 +38,8 @@ def packages():
             "message": package_message(status, date_str)
         })
 
-    return json.dumps(response)
+    print(json.dumps(response, ensure_ascii=False))
+    return json.dumps(response, ensure_ascii=False)
 
 
 @app.route("/notify")
