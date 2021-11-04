@@ -1,8 +1,6 @@
 from flask import Flask, request, make_response
 import requests
 import json
-import sqlite3
-import time
 from dbutils import query
 from datetime import datetime
 
@@ -15,11 +13,11 @@ def hello_world():
     return f"<p>Hello, World!</p>"
 
 
-def package_message(status, date_str):
+def package_message(status):
     if status == "sent":
-        return f"Pakken er på vei - {date_str}"
+        return f"Pakken er på vei"
     elif status == "ordered":
-        return f"Frakt er bestilt - {date_str}"
+        return f"Frakt er bestilt"
 
 
 @app.route("/packages")
@@ -35,21 +33,22 @@ def packages():
             "shop_name": shop_name,
             "delivery_time": time_str,
             "delivery_date": date_str,
-            "message": package_message(status, date_str)
+            "message": package_message(status)
         })
 
-    print(json.dumps(response, ensure_ascii=False))
     return json.dumps(response, ensure_ascii=False)
+
+
+@app.route("/register-device")
+def notify():
+    device_token = request.args.get("device_token")
+    query("insert into device_token (value) values (?) on conflict do nothing", (device_token,))
+    return device_token
 
 
 @app.route("/notify")
 def notify():
-    time.sleep(3)
-    device_token = request.args.get("device_token")
-
-    query("insert into device_token (value) values (?) on conflict do nothing", (device_token,))
-
-    tokens = [row[0] for row in cur.execute(f"select * from device_token")]
+    tokens = [row[0] for row in query(f"select * from device_token")]
     print(tokens)
 
     for token in tokens:
