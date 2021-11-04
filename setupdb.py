@@ -1,7 +1,25 @@
 import sqlite3
+from datetime import datetime
+import os
 
-con = sqlite3.connect('database.db')
+
+if os.path.exists("sqlite.db"):
+    os.remove("sqlite.db")
+
+con = sqlite3.connect('sqlite.db')
 cur = con.cursor()
-cur.execute("create table device_token (value varchar(255) unique)")
+
+with open("dbinit.sql") as f:
+    q = f.read()
+
+cur.executescript(q)
+cur.execute("insert into package (shop_name, delivery_time, status) "
+            "values "
+            "('G-Sport', ?, 'sent'), "
+            "('Komplett', ?, 'ordered')", (datetime.now(), datetime.now()))
+
+for row in cur.execute("select * from package"):
+    print(row)
+
 con.commit()
 con.close()
