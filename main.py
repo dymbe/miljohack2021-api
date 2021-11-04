@@ -23,6 +23,7 @@ def notify():
     cur.execute("insert into device_token (value) values (?)", (device_token,))
 
     tokens = [row[0] for row in cur.execute(f"select * from device_token")]
+    print(tokens)
     con.commit()
     con.close()
 
