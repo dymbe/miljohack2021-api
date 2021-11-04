@@ -4,7 +4,7 @@ import json
 
 app = Flask(__name__)
 
-server_key = "secret"
+server_key = "AAAAUKuWS4o:APA91bEqw_9luyNSvNpEpDQOqhYFt1NV6-R4MweUKuyxDCHnFqjn4u1t8Fxx5-rDpHhBakhn7adRoJ3mArnkw7zexbEVzHVOy3wDtybd56TkFOif9EdyuB4qNhxe1hTM_o2iDNRr05VF"
 
 
 @app.route("/")
@@ -35,4 +35,4 @@ def notify():
     response = requests.post("https://fcm.googleapis.com/fcm/send", headers=headers, data=json.dumps(body))
     print(response.status_code)
 
-    print(response.json())
+    return response.json()
