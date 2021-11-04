@@ -13,10 +13,10 @@ with open("dbinit.sql") as f:
     q = f.read()
 
 cur.executescript(q)
-cur.execute("insert into package (shop_name, delivery_time, status) "
+cur.execute("insert into package (shop_name, delivery_time, status, climate_optimized) "
             "values "
-            "('G-Sport', ?, 'sent'), "
-            "('Komplett', ?, 'ordered')", (datetime.now(), datetime.now()))
+            "('G-Sport', ?, 'sent', false), "
+            "('Komplett', ?, 'ordered', true)", (datetime.now(), datetime.now()))
 
 for row in cur.execute("select * from package"):
     print(row)
