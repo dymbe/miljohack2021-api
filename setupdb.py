@@ -29,7 +29,7 @@ with open("example_data.csv", "r") as f:
         zip_code = zip_codes[random.randint(0, len(zip_codes) - 1)]
         user_id = random.randint(2, 1000)
         values.append([user_id, shop_name, ordered_time, terminal_time, terminal_time, climate_optimized, zip_code])
-    for i in range(5):
+    for i in range(7):
         print(values[i])
         values[i][0] = 1
     values = [str(tuple(x)) for x in values]
