@@ -1,5 +1,4 @@
 import sqlite3
-from datetime import datetime
 import os
 import csv
 from dbutils import query
@@ -22,13 +21,19 @@ with open("example_data.csv", "r") as f:
     headers = next(reader)
     values = []
     for row in reader:
+        if row is None:
+            print("WTFFFF")
         weight, ordered_time, terminal_time, _, climate_optimized = row[1:]
         shop_name = "Komplett AS"
         zip_codes = ["3231 Oslo", "4527 Alta", "2414 Trondheim"]
         zip_code = zip_codes[random.randint(0, len(zip_codes) - 1)]
-        value = str((shop_name, ordered_time, terminal_time, terminal_time, climate_optimized, zip_code))
-        values.append(value)
-    query("insert into package (shop_name, ordered_time, terminal_time, delivery_time, climate_optimized, zip_code) values " + ", ".join(values))
+        user_id = random.randint(2, 1000)
+        values.append([user_id, shop_name, ordered_time, terminal_time, terminal_time, climate_optimized, zip_code])
+    for i in range(5):
+        print(values[i])
+        values[i][0] = 1
+    values = [str(tuple(x)) for x in values]
+    query("insert into package (user_id, shop_name, ordered_time, terminal_time, delivery_time, climate_optimized, zip_code) values " + ", ".join(values))
 
 for row in cur.execute("select * from package"):
     print(row)

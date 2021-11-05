@@ -20,15 +20,15 @@ def hello_world():
 
 @app.route("/packages")
 def packages():
-    results = query("select rowid, shop_name, delivery_time, climate_optimized from package")
-
+    results = query("select rowid, user_id, shop_name, delivery_time, climate_optimized from package where user_id = 1")
     response = []
-    for package_id, shop_name, delivery_time, climate_optimized in results:
+    for package_id, user_id, shop_name, delivery_time, climate_optimized in results:
         dt = datetime.strptime(delivery_time, "%Y-%m-%d %H:%M:%S")
         time_str = dt.strftime("%H:%M")
         date_str = dt.strftime("%d/%m")
         response.append({
             "package_id": package_id,
+            "user_id": user_id,
             "shop_name": shop_name,
             "delivery_time": time_str,
             "delivery_date": date_str,
