@@ -1,9 +1,12 @@
+import os
+
 from flask import Flask, request
 import requests
 import json
 from dbutils import query
 from datetime import datetime
 from os import environ
+from collections import Counter
 
 
 app = Flask(__name__)
@@ -15,20 +18,13 @@ def hello_world():
     return f"<p>Hello, World!</p>"
 
 
-def package_message(status):
-    if status == "sent":
-        return f"Pakken er på vei"
-    elif status == "ordered":
-        return f"Frakt er bestilt"
-
-
 @app.route("/packages")
 def packages():
-    results = query("select rowid, shop_name, delivery_time, status, climate_optimized from package")
+    results = query("select rowid, shop_name, delivery_time, climate_optimized from package")
 
     response = []
-    for package_id, shop_name, delivery_time, status, climate_optimized in results:
-        dt = datetime.strptime(delivery_time, "%Y-%m-%d %H:%M:%S.%f")
+    for package_id, shop_name, delivery_time, climate_optimized in results:
+        dt = datetime.strptime(delivery_time, "%Y-%m-%d %H:%M:%S")
         time_str = dt.strftime("%H:%M")
         date_str = dt.strftime("%d/%m")
         response.append({
@@ -37,7 +33,6 @@ def packages():
             "delivery_time": time_str,
             "delivery_date": date_str,
             "delivery_timestamp": delivery_time,
-            "message": package_message(status),
             "climate_optimized": climate_optimized
         })
 
@@ -57,7 +52,6 @@ def set_package_optimization(package_id, optimize):
         "delivery_time": time_str,
         "delivery_date": date_str,
         "delivery_timestamp": delivery_time,
-        "message": package_message(status),
         "climate_optimized": climate_optimized
     }
     return json.dumps(response, ensure_ascii=False)
@@ -106,8 +100,28 @@ def notify():
     return "Tried to send notification"
 
 
+@app.route("/leaderboard")
+def leaderboard():
+    optimize_counter = Counter()
+    total_counter = Counter()
+
+    rows = query("select climate_optimized, zip_code from package")
+
+    for climate_optimized, zip_code in rows:
+        print(climate_optimized, climate_optimized == "True", zip_code)
+        optimize_counter[zip_code] += int(climate_optimized == "True")
+        total_counter[zip_code] += 1
+
+    results = [
+        {"zip_code": zip_code, "score": optimize_counter[zip_code] / total_counter[zip_code]}
+        for zip_code in total_counter
+    ]
+
+    return json.dumps(results)
+
+
 if __name__ == "__main__":
     app.debug = True
-    host = environ["FLASK_HOST"]
-    port = int(environ["FLASK_PORT"])
+    host = os.getenv("FLASK_HOST", "0.0.0.0")
+    port = int(os.getenv("FLASK_PORT", 5000))
     app.run(host=host, port=port)
