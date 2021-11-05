@@ -36,6 +36,7 @@ def packages():
             "shop_name": shop_name,
             "delivery_time": time_str,
             "delivery_date": date_str,
+            "delivery_timestamp": delivery_time,
             "message": package_message(status),
             "climate_optimized": climate_optimized
         })
