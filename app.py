@@ -5,7 +5,6 @@ import requests
 import json
 from dbutils import query
 from datetime import datetime
-from os import environ
 from collections import Counter
 
 
@@ -112,10 +111,10 @@ def leaderboard():
         optimize_counter[zip_code] += int(climate_optimized == "True")
         total_counter[zip_code] += 1
 
-    results = [
+    results = sorted([
         {"zip_code": zip_code, "score": optimize_counter[zip_code] / total_counter[zip_code]}
         for zip_code in total_counter
-    ]
+    ], key=lambda x: x["score"])
 
     return json.dumps(results)
 
