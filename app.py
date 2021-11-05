@@ -114,7 +114,7 @@ def leaderboard():
     results = sorted([
         {"zip_code": zip_code, "score": optimize_counter[zip_code] / total_counter[zip_code]}
         for zip_code in total_counter
-    ], key=lambda x: x["score"])
+    ], key=lambda x: x["score"], reverse=True)
 
     return json.dumps(results)
 
