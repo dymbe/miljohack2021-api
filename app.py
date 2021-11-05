@@ -43,10 +43,8 @@ def packages():
     return json.dumps(response, ensure_ascii=False)
 
 
-@app.route("/optimize-package")
-def optimize_package():
-    package_id = request.args.get("package_id")
-    query("update package set climate_optimized = true where rowid = ?", (package_id,))
+def set_package_optimization(package_id, optimize):
+    query("update package set climate_optimized = ? where rowid = ?", (optimize, package_id))
     result = query("select rowid, shop_name, delivery_time, status, climate_optimized from package")[0]
     package_id, shop_name, delivery_time, status, climate_optimized = result
     dt = datetime.strptime(delivery_time, "%Y-%m-%d %H:%M:%S.%f")
@@ -57,30 +55,23 @@ def optimize_package():
         "shop_name": shop_name,
         "delivery_time": time_str,
         "delivery_date": date_str,
+        "delivery_timestamp": delivery_time,
         "message": package_message(status),
         "climate_optimized": climate_optimized
     }
     return json.dumps(response, ensure_ascii=False)
+
+
+@app.route("/optimize-package")
+def optimize_package():
+    package_id = request.args.get("package_id")
+    return set_package_optimization(package_id, True)
 
 
 @app.route("/unoptimize-package")
 def unoptimize_package():
     package_id = request.args.get("package_id")
-    query("update package set climate_optimized = false where rowid = ?", (package_id,))
-    result = query("select rowid, shop_name, delivery_time, status, climate_optimized from package")[0]
-    package_id, shop_name, delivery_time, status, climate_optimized = result
-    dt = datetime.strptime(delivery_time, "%Y-%m-%d %H:%M:%S.%f")
-    time_str = dt.strftime("%H:%M")
-    date_str = dt.strftime("%d/%m")
-    response = {
-        "package_id": package_id,
-        "shop_name": shop_name,
-        "delivery_time": time_str,
-        "delivery_date": date_str,
-        "message": package_message(status),
-        "climate_optimized": climate_optimized
-    }
-    return json.dumps(response, ensure_ascii=False)
+    return set_package_optimization(package_id, False)
 
 
 @app.route("/register-device")
@@ -93,21 +84,20 @@ def register_device():
 @app.route("/notify")
 def notify():
     tokens = [row[0] for row in query(f"select * from device_token")]
-    print(tokens)
 
     for token in tokens:
         headers = {
-            'Content-Type': 'application/json',
-            'Authorization': 'key=' + server_key,
+            "Content-Type": "application/json",
+            "Authorization": "key=" + server_key,
         }
 
         body = {
-            'notification': {
-                'title': 'Sending push form python script',
-                'body': 'New Message'
+            "notification": {
+                "title": "Sending push form python script",
+                "body": "New Message"
             },
-            'to': token,
-            'priority': 'high',
+            "to": token,
+            "priority": "high",
         }
 
         requests.post("https://fcm.googleapis.com/fcm/send", headers=headers, data=json.dumps(body))
@@ -115,7 +105,7 @@ def notify():
     return "Tried to send notification"
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.debug = True
     host = environ["FLASK_HOST"]
     port = int(environ["FLASK_PORT"])
