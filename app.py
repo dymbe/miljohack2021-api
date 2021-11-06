@@ -6,6 +6,9 @@ import json
 from dbutils import query
 from datetime import datetime
 from collections import Counter
+import pandas as pd
+from multiprocessing import Process
+import time
 
 
 app = Flask(__name__)
@@ -38,11 +41,41 @@ def packages():
     return json.dumps(response, ensure_ascii=False)
 
 
+def run_ml():
+    time.sleep(5)
+    rows = query(
+        "select rowid, shop_name, delivery_time, terminal_time, ordered_time, climate_optimized from package"
+    )
+
+    df = pd.DataFrame([
+        {
+            "package_id": rowid,
+            "shop_name": shop_name,
+            "delivery_time": delivery_time,
+            "terminal_time": terminal_time,
+            "ordered_time": ordered_time,
+            "climate_optimized": climate_optimized
+        }
+        for rowid, shop_name, delivery_time, terminal_time, ordered_time, climate_optimized in rows
+    ])
+    df["climate_optimized"] = df["climate_optimized"].astype(bool)
+    print(df.to_string())
+    notify()
+
+
 def set_package_optimization(package_id, optimize):
     query("update package set climate_optimized = ? where rowid = ?", (optimize, package_id))
-    result = query("select rowid, shop_name, delivery_time, status, climate_optimized from package")[0]
-    package_id, shop_name, delivery_time, status, climate_optimized = result
-    dt = datetime.strptime(delivery_time, "%Y-%m-%d %H:%M:%S.%f")
+
+    p = Process(target=run_ml)
+    p.start()
+
+    result = query(
+        "select rowid, shop_name, delivery_time, climate_optimized from package where rowid = ?",
+        (package_id,)
+    )[0]
+
+    package_id, shop_name, delivery_time, climate_optimized = result
+    dt = datetime.strptime(delivery_time, "%Y-%m-%d %H:%M:%S")
     time_str = dt.strftime("%H:%M")
     date_str = dt.strftime("%d/%m")
     response = {
