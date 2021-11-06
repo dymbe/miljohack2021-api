@@ -30,15 +30,13 @@ with open("example_data.csv", "r") as f:
     headers = next(reader)
     values = []
     for row in reader:
-        if row is None:
-            print("WTFFFF")
         weight, ordered_time, terminal_time, _, climate_optimized = row[1:]
         shop_name = "Komplett AS"
         zip_code = random.choices(zip_codes, weights, k=1)[0]
         user_id = random.randint(2, 1000)
         values.append([user_id, shop_name, ordered_time, terminal_time, terminal_time, climate_optimized, zip_code])
     for i in range(7):
-        print(values[i])
+        values[i][-2] = False
         values[i][0] = 1
     values = [str(tuple(x)) for x in values]
     query("insert into package (user_id, shop_name, ordered_time, terminal_time, delivery_time, climate_optimized, zip_code) values " + ", ".join(values))
