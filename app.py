@@ -42,24 +42,32 @@ def packages():
 
 
 def run_ml():
-    time.sleep(5)
+    time.sleep(6)
     rows = query(
-        "select rowid, shop_name, delivery_time, terminal_time, ordered_time, climate_optimized from package"
+        "select rowid, user_id, shop_name, delivery_time, terminal_time, ordered_time, climate_optimized from package"
     )
 
     df = pd.DataFrame([
         {
             "package_id": rowid,
+            "user_id": user_id,
             "shop_name": shop_name,
             "delivery_time": delivery_time,
             "terminal_time": terminal_time,
             "ordered_time": ordered_time,
             "climate_optimized": climate_optimized
         }
-        for rowid, shop_name, delivery_time, terminal_time, ordered_time, climate_optimized in rows
+        for rowid, user_id, shop_name, delivery_time, terminal_time, ordered_time, climate_optimized in rows
     ])
-    df["climate_optimized"] = df["climate_optimized"].astype(bool)
-    print(df.to_string())
+    df["climate_optimized"] = (df["climate_optimized"] == 1) | (df["climate_optimized"] == "True")
+    df["delivery_time"] = pd.to_datetime(df["delivery_time"])
+    print(df[["delivery_time", "user_id", "climate_optimized"]])
+
+    latest_timestamp = df[df["user_id"] == 1]["delivery_time"].max()
+    package_ids = df[(df["climate_optimized"] == True) & (df["user_id"] == 1)]["package_id"]
+    for packid in package_ids:
+        query("update package set delivery_time = ? where rowid = ?", (str(latest_timestamp), packid))
+
     notify()
 
 
@@ -120,8 +128,8 @@ def notify():
 
         body = {
             "notification": {
-                "title": "Sending push form python script",
-                "body": "New Message"
+                "title": "Pakken din har blitt klimaoptimal",
+                "body": "Vi har regnet ut en leveringstid som minimerer ditt klimaavtrykk"
             },
             "to": token,
             "priority": "high",
